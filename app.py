@@ -2,18 +2,18 @@ import streamlit as st
 from catboost import CatBoostClassifier
 import numpy as np
 
-# =========================================
-# LOAD MODEL CATBOOST (FORMAT .cbm)
-# =========================================
+# ============================
+# LOAD MODEL CATBOOST (.cbm)
+# ============================
 model = CatBoostClassifier()
 model.load_model("model_catboost_stunting.cbm")
 
 st.title("Aplikasi Prediksi Stunting")
 st.write("Masukkan data anak lalu klik tombol prediksi untuk mengetahui status stunting.")
 
-# =========================================
+# ============================
 # INPUT FORM
-# =========================================
+# ============================
 
 umur = st.number_input("Umur (bulan)", 0, 60, 24)
 berat = st.number_input("Berat Badan (kg)", 0.0, 30.0, 10.0)
@@ -24,9 +24,9 @@ asi = st.selectbox("ASI Eksklusif", ["Ya", "Tidak"])
 pendidikan_ibu = st.selectbox("Pendidikan Ibu", ["SD", "SMP", "SMA", "Kuliah"])
 pendapatan = st.number_input("Pendapatan Orangtua (Rp)", 0, 20000000, 2000000)
 
-# =========================================
-# ENCODING FITUR (HARUS SAMA DENGAN NOTEBOOK)
-# =========================================
+# ============================
+# ENCODING
+# ============================
 
 jk_enc = 1 if jenis_kelamin == "Laki-laki" else 0
 asi_enc = 1 if asi == "Ya" else 0
@@ -39,12 +39,11 @@ pendidikan_map = {
 }
 pendidikan_enc = pendidikan_map[pendidikan_ibu]
 
-# =========================================
+# ============================
 # PREDIKSI
-# =========================================
+# ============================
 
 if st.button("Prediksi Stunting"):
-    # Urutan fitur WAJIB sama dengan training CatBoost kamu
     fitur = np.array([
         umur,
         berat,
