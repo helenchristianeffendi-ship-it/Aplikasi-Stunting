@@ -1,31 +1,63 @@
-# STREAMLIT APP - LOGISTIC REGRESSION
 import streamlit as st
-import numpy as np
 import pickle
+import numpy as np
 
-# Load model & scaler
-model = pickle.load(open("logreg_model.pkl", "rb"))
-scaler = pickle.load(open("scaler.pkl", "rb"))
+# =================================
+# LOAD MODEL & SCALER
+# =================================
+model = pickle.load(open("model_xgb_stunting.pkl", "rb"))
+scaler = pickle.load(open("scaler_stunting.pkl", "rb"))
 
-st.title("Prediksi Diabetes - Logistic Regression")
+st.title("Prediksi Stunting Menggunakan XGBoost")
+st.write("Masukkan data anak untuk memprediksi status stunting")
 
-st.write("Masukkan data pasien untuk mengetahui apakah terindikasi diabetes atau tidak.")
+# =================================
+# INPUT FORM
+# =================================
 
-preg = st.number_input("Jumlah Kehamilan", 0, 20)
-glu = st.number_input("Glukosa", 0, 300)
-bp = st.number_input("Tekanan Darah", 0, 200)
-skin = st.number_input("Skin Thickness", 0, 100)
-ins = st.number_input("Insulin", 0, 900)
-bmi = st.number_input("BMI", 0.0, 70.0)
-dpf = st.number_input("Diabetes Pedigree Function", 0.0, 3.0)
-age = st.number_input("Usia", 1, 120)
+umur = st.number_input("Umur (bulan)", 0, 60, 24)
+berat = st.number_input("Berat Badan (kg)", 0.0, 30.0, 10.0)
+tinggi = st.number_input("Tinggi Badan (cm)", 0.0, 120.0, 80.0)
+
+jenis_kelamin = st.selectbox("Jenis Kelamin", ["Laki-laki", "Perempuan"])
+asi = st.selectbox("ASI Eksklusif", ["Ya", "Tidak"])
+pendidikan_ibu = st.selectbox("Pendidikan Ibu", ["SD", "SMP", "SMA", "Kuliah"])
+penghasilan = st.number_input("Pendapatan Orang Tua (Rp)", 0, 10000000, 2000000)
+
+# Encoding manual (sesuaikan dengan notebook-mu!)
+jenis_kelamin_enc = 1 if jenis_kelamin == "Laki-laki" else 0
+asi_enc = 1 if asi == "Ya" else 0
+
+pendidikan_map = {
+    "SD": 0,
+    "SMP": 1,
+    "SMA": 2,
+    "Kuliah": 3
+}
+pendidikan_enc = pendidikan_map[pendidikan_ibu]
+
+# =================================
+# PREDIKSI
+# =================================
 
 if st.button("Prediksi"):
-    data = np.array([[preg, glu, bp, skin, ins, bmi, dpf, age]])
-    scaled = scaler.transform(data)
+    # Urutan fitur harus SAMA dengan notebook-mu
+    features = np.array([
+        umur,
+        berat,
+        tinggi,
+        jenis_kelamin_enc,
+        asi_enc,
+        pendidikan_enc,
+        penghasilan
+    ]).reshape(1, -1)
+
+    # Scaling sesuai training
+    scaled = scaler.transform(features)
+
     pred = model.predict(scaled)[0]
 
-    if pred == 1:
-        st.error("⚠️ Hasil: Pasien terindikasi Diabetes")
-    else:
-        st.success("✔️ Hasil: Pasien TIDAK terindikasi Diabetes")
+    label = "Tidak Stunting" if pred == 0 else "Stunting"
+
+    st.subheader("Hasil Prediksi")
+    st.write(f"**Status: {label}**")
