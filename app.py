@@ -3,9 +3,10 @@ import joblib
 import numpy as np
 
 # ================================
-# LOAD MODEL XGBOOST
+# LOAD MODEL & SCALER
 # ================================
 model = joblib.load("model_xgb_stunting.pkl")
+scaler = joblib.load("scaler_stunting.pkl")   # WAJIB ADA DAN VALID
 
 st.title("Aplikasi Prediksi Stunting (XGBoost)")
 st.write("Masukkan data anak lalu klik tombol prediksi.")
@@ -53,7 +54,10 @@ if st.button("Prediksi Stunting"):
         pendapatan
     ]).reshape(1, -1)
 
-    pred = model.predict(fitur)[0]
+    # WAJIB: scaling sebelum prediksi
+    fitur_scaled = scaler.transform(fitur)
+
+    pred = model.predict(fitur_scaled)[0]
     hasil = "TIDAK STUNTING" if pred == 0 else "STUNTING"
 
     st.subheader("Hasil Prediksi")
